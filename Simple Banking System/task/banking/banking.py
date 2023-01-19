@@ -1,6 +1,10 @@
+# new branch
 # Write your code here
 from random import randint
+import sqlite3
 
+sqlcon = sqlite3.connect('card.s3db')
+sql_cur = sqlcon.cursor()
 
 class Bank:
     accounts_count = 0
@@ -10,19 +14,21 @@ class Bank:
     def __init__(self, bankname):
         self.bankname = bankname
 
+
     def createclientcard(self):
 
         gencardnum = randint(1, 999999999)
         zero_count = 9 - len(str(gencardnum))
         new_clientcard = self.iin_const + ("0" * zero_count) + str(gencardnum)
         newcard_checksum = self.genchecksum(new_clientcard)
-        print(new_clientcard, newcard_checksum)
+        # print(new_clientcard, newcard_checksum)
+
         if newcard_checksum > - 1:
             new_clientcard += str(newcard_checksum)
         else:
             raise ValueError('The card and checksum dont match', newcard_checksum)
 
-        rnd_pin = randint(9999, 9999)
+        rnd_pin = randint(1111, 9999)
         new_pin = "0" * (4 - len(str(rnd_pin))) + str(rnd_pin)
         return new_clientcard, new_pin
 
@@ -37,6 +43,9 @@ class Bank:
 
         self.clientsdb[self.clientcardnumber] = [name, surname, city,
                                                  self.clientcardpin, self.clientbalance]
+
+        sql_cur.execute('INSERT INTO account_list (id, number, pin, balance) VALUES (1, "123456789", "9991", 0)')
+
         self.accounts_count = len(self.clientsdb)
 
     def accountdump(self):
@@ -66,13 +75,12 @@ class Bank:
             cardsum += digit
 
         if cardsum % 10 == 0:
-            checksum = 0
+            return 0
         else:
             checksum = 10 - (cardsum % 10)
+            if 0 <= checksum <= 9:
+                return checksum
 
-        if 0 <= checksum <= 9:
-            return checksum
-        print(cardnum, checksum)
         return -1
 
 
@@ -151,5 +159,10 @@ def user_interface():
         print()
 
 
+
 Tink = Bank("Tinkow")
 user_interface()
+
+# cur.execute("INSERT INTO ")
+# sql_cur.execute("CREATE TABLE account_list (id int, number TEXT, pin TEXT, balance TEXT);")
+sqlcon.close()
